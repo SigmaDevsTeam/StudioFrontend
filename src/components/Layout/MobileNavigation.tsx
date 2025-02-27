@@ -7,8 +7,6 @@ import { Popup } from "../theme/Popup";
 function MobileNavigation({
    navigateToDocs,
    navigateToSpace,
-   navigateToLogin,
-   navigateToSettings
 }: NavigationProps) {
    return (
       <footer className="sm:hidden p-3 bg-(--color-panel-solid) border-t border-(--gray-6)">
