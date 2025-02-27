@@ -1,0 +1,1 @@
+export {default as animationsSlice} from "./animation.slice"

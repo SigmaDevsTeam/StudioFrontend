@@ -1,0 +1,39 @@
+.slide {
+   @apply w-screen h-screen fixed border-y border-(--gray-6);
+   background: #000;
+   background: linear-gradient(
+      var(--color-panel-solid) 0%,
+      var(--color-background) 50%,
+      var(--color-panel-solid) 100%
+   );
+
+   z-index: 99999999999999 !important;
+}
+
+@keyframes cover-animation {
+   0% {
+      transform: translate(0, 0);
+   }
+   100% {
+      transform: translate(0, -100%);
+   }
+}
+
+.cover-slide {
+   animation: cover-animation 1s ease forwards;
+   top: 100%;
+}
+
+@keyframes uncover-animation {
+   0% {
+      transform: translate(0, 0);
+   }
+   100% {
+      transform: translate(0, -100%);
+   }
+}
+
+.uncover-slide {
+   animation: uncover-animation 1s ease forwards;
+   top: 0;
+}

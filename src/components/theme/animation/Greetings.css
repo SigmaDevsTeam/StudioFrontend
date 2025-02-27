@@ -1,0 +1,132 @@
+/* greetings */
+
+@keyframes greetings-animation {
+   0% {
+      opacity: 0;
+   }
+
+   12.5% {
+      opacity: 100;
+   }
+
+   75% {
+      opacity: 100;
+   }
+
+   100% {
+      opacity: 92.5%;
+   }
+}
+
+.greetings {
+   @apply w-screen h-screen fixed;
+   inset: 0;
+}
+
+.greetings > .greetings-overlay {
+   animation: greetings-animation 4s ease forwards;
+   background: var(--color-background);
+   @apply w-screen h-screen absolute;
+   inset: 0;
+}
+
+@keyframes appear-from-bottom {
+   0% {
+      opacity: 0;
+      transform: translateY(25px);
+   }
+
+   100% {
+      opacity: 100;
+      transform: translateY(0);
+   }
+}
+
+@keyframes appear-size {
+   0% {
+      opacity: 0;
+      transform: scale(0.95, 0.95);
+   }
+
+   50% {
+      transform: scale(1.5, 1.5);
+   }
+
+   100% {
+      opacity: 100;
+      transform: scale(1.2, 1.2);
+   }
+}
+
+.greetings > .greetings-content {
+   @apply fixed top-1/2 left-1/2 -translate-1/2 flex flex-col items-center;
+}
+
+.greetings-content > * {
+   text-align: center;
+}
+
+.greetings > .greetings-content h1 {
+   animation: appear-from-bottom 1s ease-in-out forwards;
+}
+
+.greetings > .greetings-content p {
+   margin-top: 10rem;
+   opacity: 0;
+   animation: appear-from-bottom 1s ease-in-out forwards;
+   animation-delay: 1s;
+}
+
+.greetings > .greetings-content .greetings-gui {
+   margin-top: 4rem;
+   opacity: 0;
+   animation: appear-size 1s ease-in-out forwards;
+   animation-delay: 2.5s;
+}
+
+/* end-greetings */
+
+@keyframes end-greetings-animation {
+   0% {
+      opacity: 1;
+   }
+
+   100% {
+      opacity: 0;
+   }
+}
+
+@keyframes disappear-upwards {
+   0% {
+      opacity: 1;
+      transform: translateY(0);
+   }
+   100% {
+      opacity: 0;
+      transform: translateY(-35px);
+   }
+}
+@keyframes disappear-upwards-size {
+   0% {
+      opacity: 1;
+      transform: translateY(0) scale(1.2, 1.2);
+   }
+   100% {
+      opacity: 0;
+      transform: translateY(-35px) scale(1, 1);
+   }
+}
+
+.end-greetings {
+   opacity: 1;
+   animation: end-greetings-animation 0.75s ease-in-out forwards;
+}
+
+.end-greetings > .greetings-content h1,
+.end-greetings > .greetings-content p {
+   animation: disappear-upwards 0.75s ease-in-out forwards;
+}
+
+.end-greetings > .greetings-content .greetings-gui {
+   animation: disappear-upwards-size 0.75s ease-in-out forwards;
+}
