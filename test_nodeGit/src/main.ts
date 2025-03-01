@@ -2,13 +2,22 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import express, { Request, Response } from 'express';
+import OpenAI from 'openai';
 
 dotenv.config();
 
 const GITHUB_API = 'https://api.github.com';
 const OWNER = process.env.GITHUB_USERNAME as string;
 const TOKEN = process.env.GITHUB_TOKEN as string;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
+
+const app = express();
+app.use(express.json());
+
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY
+});
 
 const headers = {
   Authorization: `token ${TOKEN}`,
@@ -34,11 +43,14 @@ interface FileToCommit {
 /**
  * Create a GitHub repository
  */
-async function createRepo(repoName: string): Promise<void> {
+async function createRepo(
+  repoName: string,
+  isPrivate: boolean = false
+): Promise<void> {
   try {
     const response = await axios.post(
       `${GITHUB_API}/user/repos`,
-      { name: repoName, private: false, auto_init: true }, // Set to true for private repos
+      { name: repoName, private: isPrivate, auto_init: true }, // Set to true for private repos
       { headers }
     );
     console.log(`Repository created: ${response.data.html_url}`);
@@ -66,7 +78,7 @@ async function deleteRepo(repoName: string): Promise<void> {
 }
 
 /**
- * Create a branch from main
+ * Create a branch from any other branch
  */
 async function createBranch(
   repoName: string,
@@ -166,14 +178,49 @@ async function commitFiles(
   }
 }
 
-// Usage Example
-(async () => {
-  const repoName = 'test-repo-api-ts';
-  const branchName = 'feature-branch';
-  const files: FileToCommit[] = [{ path: 'test.txt' }, { path: 'data.json' }];
+// Function to interpret the prompt using AI
+async function processPrompt(prompt: string): Promise<string> {
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    store: true,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.5
+  });
 
-  await deleteRepo(repoName);
-  await createRepo(repoName);
-  await createBranch(repoName, 'main', branchName);
-  await commitFiles(repoName, branchName, files);
-})();
+  return response.choices[0]?.message?.content?.trim() || '';
+}
+
+// Main API endpoint
+app.post('/', async (req: Request, res: Response) => {
+  const { prompt } = req.body;
+  if (!prompt)
+    return void res.status(400).json({ error: 'Prompt is required' });
+
+  try {
+    const aiResponse = await processPrompt(
+      `Analyze this command: ${prompt}. Respond with only the function name and parameters.
+      Possible functions are createRepo(repoName: string, isPrivate: boolean), deleteRepo(repoName: string)
+      Your response should look like: {function name}: {param1value}, {param2value} etc`
+    );
+
+    console.log('AI Response:', aiResponse);
+
+    // Parse AI response
+    const [cmd, args] = aiResponse.split(':');
+    const argValues = args.trim().split(', ');
+
+    if (cmd === 'createRepo') {
+      const result = await createRepo(argValues[0], Boolean(argValues[1]));
+      return void res.json({ message: result });
+    } else if (cmd === 'deleteRepo') {
+      const result = await deleteRepo(argValues[0]);
+      return void res.json({ message: result });
+    }
+
+    res.status(400).json({ error: 'Unknown command' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.listen(3000);
